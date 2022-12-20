@@ -101,5 +101,5 @@ func solve(p *Problem) {
 	for i := 0; i < 10; i++ {
 		mixAll(m)
 	}
-	p.PartOne(sum(n0))
+	p.PartTwo(sum(n0))
 }

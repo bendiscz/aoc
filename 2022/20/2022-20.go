@@ -60,12 +60,12 @@ func mixAll(m []*num) {
 }
 
 func reset(m []*num) {
+	m[0].prev = m[len(m)-1]
+	m[len(m)-1].next = m[0]
 	for i := 1; i < len(m); i++ {
 		m[i].prev = m[i-1]
 		m[i-1].next = m[i]
 	}
-	m[0].prev = m[len(m)-1]
-	m[len(m)-1].next = m[0]
 }
 
 func sum(n0 *num) int {
@@ -101,6 +101,5 @@ func solve(p *Problem) {
 	for i := 0; i < 10; i++ {
 		mixAll(m)
 	}
-
 	p.PartOne(sum(n0))
 }

@@ -29,23 +29,6 @@ type num struct {
 	prev, next *num
 }
 
-func mix(n *num, l int) {
-	d := n.value % (l - 1)
-	if d == 0 {
-		return
-	}
-
-	t := n.prev
-	n.prev.next = n.next
-	n.next.prev = n.prev
-
-	t = move(t, d)
-	n.prev = t
-	n.next = t.next
-	n.prev.next = n
-	n.next.prev = n
-}
-
 func move(n *num, d int) *num {
 	for d < 0 {
 		n = n.prev
@@ -56,6 +39,18 @@ func move(n *num, d int) *num {
 		d--
 	}
 	return n
+}
+
+func mix(n *num, l int) {
+	t := n.prev
+	n.prev.next = n.next
+	n.next.prev = n.prev
+
+	t = move(t, n.value%(l-1))
+	n.prev = t
+	n.next = t.next
+	n.prev.next = n
+	n.next.prev = n
 }
 
 func mixAll(m []*num) {

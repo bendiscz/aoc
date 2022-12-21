@@ -1,6 +1,9 @@
 package main
 
 import (
+	"sync"
+	"sync/atomic"
+
 	. "github.com/bendiscz/aoc/aoc"
 )
 
@@ -107,23 +110,38 @@ func solve(p *Problem) {
 		blueprints = append(blueprints, &b)
 	}
 
-	sum := 0
+	wg := &sync.WaitGroup{}
+	sum := atomic.Int32{}
 	for _, b := range blueprints {
-		q := b.evaluate(state{minute: 24, oreRobots: 1})
-		//p.Printf("%d: %d", b.id, q)
-		sum += b.id * q
+		wg.Add(1)
+		go func(b *blueprint) {
+			q := b.evaluate(state{minute: 24, oreRobots: 1})
+			sum.Add(int32(b.id * q))
+			wg.Done()
+		}(b)
 	}
-	p.PartOne(sum)
+	wg.Wait()
+	p.PartOne(sum.Load())
 
 	if len(blueprints) > 3 {
 		blueprints = blueprints[:3]
 	}
 
-	prod := 1
+	prod := atomic.Int32{}
+	prod.Store(1)
 	for _, b := range blueprints {
-		q := b.evaluate(state{minute: 32, oreRobots: 1})
-		//p.Printf("%d: %d", b.id, q)
-		prod *= q
+		wg.Add(1)
+		go func(b *blueprint) {
+			q := b.evaluate(state{minute: 32, oreRobots: 1})
+			for {
+				x := prod.Load()
+				if prod.CompareAndSwap(x, x*int32(q)) {
+					break
+				}
+			}
+			wg.Done()
+		}(b)
 	}
-	p.PartTwo(prod)
+	wg.Wait()
+	p.PartTwo(prod.Load())
 }

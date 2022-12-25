@@ -36,28 +36,24 @@ const digits = "=-012"
 
 func decode(s string) int {
 	n := 0
-	for i, b := len(s)-1, 1; i >= 0; i, b = i-1, b*5 {
-		d := strings.IndexByte(digits, s[i]) - 2
-		n += b * d
+	for i := 0; i < len(s); i++ {
+		n = n*5 + strings.IndexByte(digits, s[i]) - 2
 	}
 	return n
 }
 
 func encode(n int) string {
-	var s []byte
-	for b := 1; n > 0; b *= 5 {
-		d := (n + 2) % 5
-		s = append(s, digits[d])
-		n = (n + 2) / 5
+	if n == 0 {
+		return "0"
 	}
 
-	for i, j := 0, len(s)-1; i < j; i, j = i+1, j-1 {
-		s[i], s[j] = s[j], s[i]
+	s := [30]byte{}
+	i := len(s) - 1
+	for ; n > 0; i-- {
+		s[i] = digits[(n+2)%5]
+		n = (n + 2) / 5
 	}
-	if len(s) == 0 {
-		s = append(s, '0')
-	}
-	return string(s)
+	return string(s[i:len(s)])
 }
 
 func solve(p *Problem) {

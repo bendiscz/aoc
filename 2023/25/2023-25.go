@@ -3,9 +3,9 @@ package main
 import (
 	"container/heap"
 	"fmt"
+	"slices"
 
 	. "github.com/bendiscz/aoc/aoc"
-	"golang.org/x/exp/slices"
 )
 
 const (

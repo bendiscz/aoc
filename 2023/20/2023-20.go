@@ -2,10 +2,10 @@ package main
 
 import (
 	"fmt"
+	"slices"
 	"time"
 
 	. "github.com/bendiscz/aoc/aoc"
-	"golang.org/x/exp/slices"
 )
 
 const (

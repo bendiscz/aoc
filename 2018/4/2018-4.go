@@ -1,11 +1,11 @@
 package main
 
 import (
+	"slices"
 	"strings"
 	"time"
 
 	. "github.com/bendiscz/aoc/aoc"
-	"golang.org/x/exp/slices"
 )
 
 const (

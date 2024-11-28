@@ -3,9 +3,9 @@ package main
 import (
 	"cmp"
 	"math"
+	"slices"
 
 	. "github.com/bendiscz/aoc/aoc"
-	"golang.org/x/exp/slices"
 )
 
 const (

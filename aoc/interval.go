@@ -20,7 +20,7 @@ func (i Interval[T]) Set() IntervalSet[T] {
 }
 
 func (i Interval[T]) String() string {
-	return fmt.Sprintf("[%d; %d]", i.X1, i.X2)
+	return fmt.Sprintf("[%v; %v]", i.X1, i.X2)
 }
 
 type IntervalSet[T cmp.Ordered] []Interval[T]

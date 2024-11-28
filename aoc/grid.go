@@ -43,6 +43,28 @@ func (c XY) HasInsideX(x int) bool { return x >= 0 && x < c.X }
 func (c XY) HasInsideY(y int) bool { return y >= 0 && y < c.Y }
 func (c XY) HasInside(a XY) bool   { return c.HasInsideX(a.X) && c.HasInsideY(a.Y) }
 
+func (c XY) ForEach(fn func(xy XY)) {
+	for y := 0; y < c.Y; y++ {
+		for x := 0; x < c.X; x++ {
+			fn(XY{x, y})
+		}
+	}
+}
+
+func MaxXY(xy XY, xys ...XY) XY {
+	for _, xy2 := range xys {
+		xy = XY{max(xy.X, xy2.X), max(xy.Y, xy2.Y)}
+	}
+	return xy
+}
+
+func MinXY(xy XY, xys ...XY) XY {
+	for _, xy2 := range xys {
+		xy = XY{min(xy.X, xy2.X), min(xy.Y, xy2.Y)}
+	}
+	return xy
+}
+
 type Grid[T any] interface {
 	Size() XY
 	At(c XY) *T
@@ -69,6 +91,16 @@ func NewMatrix[T any](dim XY) *Matrix[T] {
 	}
 	for y := range m.Data {
 		m.Data[y] = make([]T, dim.X)
+	}
+	return m
+}
+
+func CopyMatrix[T any](g Grid[T]) *Matrix[T] {
+	m := NewMatrix[T](g.Size())
+	for x := 0; x < m.Dim.X; x++ {
+		for y := 0; y < m.Dim.Y; y++ {
+			m.Data[y][x] = *g.AtXY(x, y)
+		}
 	}
 	return m
 }
@@ -169,4 +201,24 @@ func PrintGridBool(g Grid[bool]) {
 
 func PrintGrid[T fmt.Stringer](g Grid[T]) {
 	PrintGridFunc[T](g, func(x T) string { return x.String() })
+}
+
+type BoolCell struct {
+	V bool
+}
+
+func (c BoolCell) String() string {
+	if c.V {
+		return SymbolFull
+	} else {
+		return SymbolEmpty
+	}
+}
+
+type ByteCell struct {
+	V byte
+}
+
+func (c ByteCell) String() string {
+	return fmt.Sprintf("%c", c.V)
 }

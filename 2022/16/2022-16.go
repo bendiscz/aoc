@@ -87,11 +87,11 @@ func search1(cache map[state1]int, s state1) int {
 	mask := uint64(1) << s.n.id
 	if s.open&mask == 0 && s.n.rate > 0 {
 		r := s.rate + search1(cache, state1{s.n, s.open | mask, s.rate + s.n.rate, s.left - 1})
-		best = Max(r, best)
+		best = max(r, best)
 	}
 	for _, nn := range s.n.next {
 		r := s.rate + search1(cache, state1{nn, s.open, s.rate, s.left - 1})
-		best = Max(r, best)
+		best = max(r, best)
 	}
 
 	cache[s] = best
@@ -128,16 +128,16 @@ func search2a(cache map[state2]int, n1, n2 *node, open uint64, rate int, left by
 
 	if open&mask == 0 && n1.rate > 0 {
 		r := rate + search2b(cache, n1, n2, open|mask, rate+n1.rate, left)
-		best = Max(r, best)
+		best = max(r, best)
 	}
 
 	for _, nn := range n1.next {
 		r := rate + search2b(cache, nn, n2, open, rate, left)
-		best = Max(r, best)
+		best = max(r, best)
 	}
 
 	r := rate + search2b(cache, n1, n2, open, rate, left)
-	best = Max(r, best)
+	best = max(r, best)
 
 	cache[s] = best
 	return best
@@ -149,16 +149,16 @@ func search2b(cache map[state2]int, n1, n2 *node, open uint64, rate int, left by
 
 	if open&mask == 0 && n2.rate > 0 {
 		r := search2a(cache, n1, n2, open|mask, rate+n2.rate, left-1)
-		best = Max(r, best)
+		best = max(r, best)
 	}
 
 	for _, nn := range n2.next {
 		r := search2a(cache, n1, nn, open, rate, left-1)
-		best = Max(r, best)
+		best = max(r, best)
 	}
 
 	r := search2a(cache, n1, n2, open, rate, left-1)
-	best = Max(r, best)
+	best = max(r, best)
 
 	return best
 }

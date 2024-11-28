@@ -113,8 +113,8 @@ func solve(p *Problem) {
 			break
 		}
 	}
-	p.PartOne(count * Min(s1, s2))
+	p.PartOne(count * min(s1, s2))
 
 	c1, c2 := playDirac(1, start1, start2, 0, 0)
-	p.PartTwo(Max(c1, c2))
+	p.PartTwo(max(c1, c2))
 }

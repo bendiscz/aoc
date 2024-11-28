@@ -9,6 +9,19 @@ import (
 	"golang.org/x/exp/constraints"
 )
 
+const Hex = "0123456789abcdef"
+
+func Mod[T constraints.Integer](a, b T) T {
+	a %= b
+	if a >= 0 {
+		return a
+	}
+	if b < 0 {
+		return a - b
+	}
+	return a + b
+}
+
 func Abs[T constraints.Signed](x T) T {
 	if x >= 0 {
 		return x
@@ -27,20 +40,15 @@ func Sign[T constraints.Signed](x T) T {
 	}
 }
 
-func Min[T constraints.Ordered](x, y T) T {
-	if x < y {
-		return x
-	} else {
-		return y
+func GCD[T constraints.Integer](a, b T) T {
+	for b != 0 {
+		a, b = b, a%b
 	}
+	return a
 }
 
-func Max[T constraints.Ordered](x, y T) T {
-	if x > y {
-		return x
-	} else {
-		return y
-	}
+func LCM[T constraints.Integer](a, b T) T {
+	return a / GCD(a, b) * b
 }
 
 func ParseInt(s string) int {
@@ -63,8 +71,12 @@ func SplitFields(s string) []string {
 	return strings.FieldsFunc(s, func(r rune) bool { return unicode.IsSpace(r) || r == ',' || r == ';' })
 }
 
+func SplitFieldsDelim(s, delim string) []string {
+	return strings.FieldsFunc(s, func(r rune) bool { return strings.ContainsRune(delim, r) })
+}
+
 func ParseInts(s string) []int {
-	f := SplitFields(s)
+	f := strings.FieldsFunc(s, func(r rune) bool { return r != '-' && !unicode.IsDigit(r) })
 	n := make([]int, len(f))
 	for i, x := range f {
 		n[i] = ParseInt(x)
@@ -73,7 +85,7 @@ func ParseInts(s string) []int {
 }
 
 func ParseUints(s string) []uint {
-	f := SplitFields(s)
+	f := strings.FieldsFunc(s, func(r rune) bool { return !unicode.IsDigit(r) })
 	n := make([]uint, len(f))
 	for i, x := range f {
 		n[i] = ParseUint(x)

@@ -60,7 +60,7 @@ func (s state) build(b *blueprint, rt int, skip int16) state {
 	return s
 }
 
-func (b *blueprint) search(s state, max *int16) {
+func (b *blueprint) search(s state, m *int16) {
 	built := false
 	for rt := 0; rt < types; rt++ {
 		if s.robots[rt] == b.limits[rt] {
@@ -76,7 +76,7 @@ func (b *blueprint) search(s state, max *int16) {
 			case s.robots[i] == 0:
 				skip = math.MaxInt16
 			default:
-				skip = Max(skip, (missing-1)/s.robots[i]+1)
+				skip = max(skip, (missing-1)/s.robots[i]+1)
 			}
 		}
 
@@ -91,12 +91,12 @@ func (b *blueprint) search(s state, max *int16) {
 		// - product of already built geode robots for remaining time
 		// - product of new geode robots if we build one for every remaining minute
 		potential := next.materials[geode] + next.minutes*next.robots[geode] + (next.minutes-1)*next.minutes/2
-		if potential <= *max {
+		if potential <= *m {
 			continue
 		}
 
 		built = true
-		b.search(next, max)
+		b.search(next, m)
 	}
 
 	if built {
@@ -104,13 +104,13 @@ func (b *blueprint) search(s state, max *int16) {
 	}
 
 	// no more robots can be built, compute geodes
-	*max = Max(*max, s.materials[geode]+s.robots[geode]*s.minutes)
+	*m = max(*m, s.materials[geode]+s.robots[geode]*s.minutes)
 }
 
 func (b *blueprint) simulate(minutes int) int {
-	max := int16(0)
-	b.search(initState(minutes), &max)
-	return int(max)
+	m := int16(0)
+	b.search(initState(minutes), &m)
+	return int(m)
 }
 
 func solve(p *Problem) {
@@ -133,7 +133,7 @@ func solve(p *Problem) {
 			&b.costs[geode][ore], &b.costs[geode][obsidian])
 
 		for i := 0; i < types; i++ {
-			b.limits[ore] = Max(b.limits[ore], b.costs[i][ore])
+			b.limits[ore] = max(b.limits[ore], b.costs[i][ore])
 		}
 		b.limits[clay] = b.costs[obsidian][clay]
 		b.limits[obsidian] = b.costs[geode][obsidian]

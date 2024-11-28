@@ -110,18 +110,18 @@ loop:
 	return moved
 }
 
-func bounds(elves map[XY]bool) (min, max XY) {
-	min, max = XY{math.MaxInt, math.MaxInt}, XY{math.MinInt, math.MinInt}
+func bounds(elves map[XY]bool) (b0, b1 XY) {
+	b0, b1 = XY{math.MaxInt, math.MaxInt}, XY{math.MinInt, math.MinInt}
 	for c := range elves {
-		min = XY{Min(min.X, c.X), Min(min.Y, c.Y)}
-		max = XY{Max(max.X, c.X), Max(max.Y, c.Y)}
+		b0 = XY{min(b0.X, c.X), min(b0.Y, c.Y)}
+		b1 = XY{max(b1.X, c.X), max(b1.Y, c.Y)}
 	}
 	return
 }
 
 func count(elves map[XY]bool) int {
-	min, max := bounds(elves)
-	d := max.Sub(min).Add(XY{1, 1})
+	b0, b1 := bounds(elves)
+	d := b1.Sub(b0).Add(XY{1, 1})
 	return d.X*d.Y - len(elves)
 }
 

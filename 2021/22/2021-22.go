@@ -51,9 +51,9 @@ func intersect(c1, c2 box) (box, bool) {
 
 	return box{
 		a: [3]axis{
-			{Max(c1.a[0].p, c2.a[0].p), Min(c1.a[0].q, c2.a[0].q)},
-			{Max(c1.a[1].p, c2.a[1].p), Min(c1.a[1].q, c2.a[1].q)},
-			{Max(c1.a[2].p, c2.a[2].p), Min(c1.a[2].q, c2.a[2].q)},
+			{max(c1.a[0].p, c2.a[0].p), min(c1.a[0].q, c2.a[0].q)},
+			{max(c1.a[1].p, c2.a[1].p), min(c1.a[1].q, c2.a[1].q)},
+			{max(c1.a[2].p, c2.a[2].p), min(c1.a[2].q, c2.a[2].q)},
 		},
 		weight: 0,
 	}, true

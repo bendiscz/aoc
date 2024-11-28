@@ -53,7 +53,7 @@ const (
 )
 
 func compareLists(x, y []any) order {
-	n := Min(len(x), len(y))
+	n := min(len(x), len(y))
 	for i := 0; i < n; i++ {
 		o := compareValues(x[i], y[i])
 		if o != Unknown {

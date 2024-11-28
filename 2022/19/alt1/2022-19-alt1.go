@@ -45,7 +45,7 @@ func (b *blueprint) evaluate(s state) int {
 		return b.evaluate(s2)
 	}
 
-	max := 0
+	m := 0
 	obsBuilt := false
 
 	if s.ore >= b.obsRobotOre && s.cla >= b.obsRobotCla && s.obsRobots < b.geoRobotObs {
@@ -53,7 +53,7 @@ func (b *blueprint) evaluate(s state) int {
 		s2.obsRobots++
 		s2.ore -= b.obsRobotOre
 		s2.cla -= b.obsRobotCla
-		max = Max(max, b.evaluate(s2))
+		m = max(m, b.evaluate(s2))
 		obsBuilt = true
 	}
 
@@ -61,7 +61,7 @@ func (b *blueprint) evaluate(s state) int {
 		s2 := s.next()
 		s2.claRobots++
 		s2.ore -= b.claRobotOre
-		max = Max(max, b.evaluate(s2))
+		m = max(m, b.evaluate(s2))
 		//obsBuilt = true
 	}
 
@@ -69,15 +69,15 @@ func (b *blueprint) evaluate(s state) int {
 		s2 := s.next()
 		s2.oreRobots++
 		s2.ore -= b.oreRobotOre
-		max = Max(max, b.evaluate(s2))
+		m = max(m, b.evaluate(s2))
 		//obsBuilt = true
 	}
 
 	if !obsBuilt {
-		max = Max(max, b.evaluate(s.next()))
+		m = max(m, b.evaluate(s.next()))
 	}
 
-	return max
+	return m
 }
 
 type state struct {

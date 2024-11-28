@@ -135,7 +135,7 @@ func (c *cave) print() {
 }
 
 func (c *cave) printTop() {
-	for y := len(c.filled) - 1; y >= Max(0, len(c.filled)-9); y-- {
+	for y := len(c.filled) - 1; y >= max(0, len(c.filled)-9); y-- {
 		fmt.Print("|")
 		for x := 0; x < WC; x++ {
 			if c.filled[y]>>x&1 != 0 {

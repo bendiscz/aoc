@@ -131,10 +131,10 @@ func solve(p *Problem) {
 	aa := g.start.id
 	p.PartOne(s0[aa][0])
 
-	max := 0
+	m := 0
 	for m1, v := 0, (1<<g.valves)-1; m1 < mm; m1++ {
 		m2 := v &^ m1
-		max = Max(s2[aa][m1]+s2[aa][m2]-T2*(rates[m1]+rates[m2]), max)
+		m = max(s2[aa][m1]+s2[aa][m2]-T2*(rates[m1]+rates[m2]), m)
 	}
-	p.PartTwo(max)
+	p.PartTwo(m)
 }

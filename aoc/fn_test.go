@@ -95,10 +95,10 @@ func TestMinMax(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(fmt.Sprintf("%d,%d", test.x, test.y), func(t *testing.T) {
-			if got := Min(test.x, test.y); got != test.min {
+			if got := min(test.x, test.y); got != test.min {
 				t.Errorf("Min want: %v, got: %v", test.min, got)
 			}
-			if got := Max(test.x, test.y); got != test.max {
+			if got := max(test.x, test.y); got != test.max {
 				t.Errorf("Max want: %v, got: %v", test.max, got)
 			}
 		})

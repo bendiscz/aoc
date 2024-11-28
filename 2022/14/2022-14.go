@@ -79,7 +79,7 @@ func fill(m *Matrix[cell], c XY) (int, bool) {
 }
 
 func solve(p *Problem) {
-	min, max := XY{math.MaxInt, math.MaxInt}, XY{math.MinInt, math.MinInt}
+	p0, p1 := XY{math.MaxInt, math.MaxInt}, XY{math.MinInt, math.MinInt}
 	var lines [][]XY
 	for p.NextLine() {
 		var line []XY
@@ -87,20 +87,20 @@ func solve(p *Problem) {
 			coords := ParseInts(s)
 			c := XY{coords[0], coords[1]}
 			line = append(line, c)
-			min = XY{Min(c.X, min.X), Min(c.Y, min.Y)}
-			max = XY{Max(c.X, max.X), Max(c.Y, max.Y)}
+			p0 = XY{min(c.X, p0.X), min(c.Y, p0.Y)}
+			p1 = XY{max(c.X, p1.X), max(c.Y, p1.Y)}
 
 		}
 		lines = append(lines, line)
 	}
 
 	orig := XY{500, 0}
-	max.Y += 2
-	min.X = Min(orig.X-max.Y, min.X)
-	max.X = Max(orig.X+max.Y, max.X)
+	p1.Y += 2
+	p0.X = min(orig.X-p1.Y, p0.X)
+	p1.X = max(orig.X+p1.Y, p1.X)
 
-	c0 := XY{min.X, 0}
-	d := max.Sub(c0).Add(XY{1, 1})
+	c0 := XY{p0.X, 0}
+	d := p1.Sub(c0).Add(XY{1, 1})
 	orig = orig.Sub(c0)
 
 	m := NewMatrix[cell](d)

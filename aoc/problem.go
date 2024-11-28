@@ -14,6 +14,18 @@ var (
 	reCache = map[string]*regexp.Regexp{}
 )
 
+type LineReader interface {
+	ReadAll() string
+	ReadLine() string
+	ReadLineBytes() []byte
+	SkipLines(n int)
+	NextLine() bool
+	Line() string
+	LineBytes() []byte
+	Parse(pattern string) []string
+	Scanf(format string, v ...any)
+}
+
 type Problem struct {
 	desc   string
 	exam   bool
@@ -85,6 +97,22 @@ func (p *Problem) ReadAll() string {
 	return string(b)
 }
 
+func (p *Problem) SkipLines(n int) {
+	for i := 0; i < n; i++ {
+		p.NextLine()
+	}
+}
+
+func (p *Problem) ReadLine() string {
+	p.NextLine()
+	return p.Line()
+}
+
+func (p *Problem) ReadLineBytes() []byte {
+	p.NextLine()
+	return p.LineBytes()
+}
+
 func (p *Problem) NextLine() bool {
 	s := p.scanner()
 	if ok := s.Scan(); !ok {
@@ -138,3 +166,47 @@ func (p *Problem) scanner() *bufio.Scanner {
 	}
 	return p.lines
 }
+
+type blockLineReader struct {
+	*Problem
+	finished bool
+}
+
+func (r *blockLineReader) readLine() string {
+	if r.finished {
+		return ""
+	}
+
+	line := r.ReadLine()
+	if line == "" {
+		r.finished = true
+	}
+
+	return line
+}
+
+func (r *blockLineReader) ReadAll() string {
+	all := strings.Builder{}
+	for line := r.readLine(); line != ""; line = r.readLine() {
+		all.WriteString(line)
+	}
+	return all.String()
+}
+
+func (r *blockLineReader) ReadLine() string {
+	return r.readLine()
+}
+
+func (r *blockLineReader) ReadLineBytes() []byte {
+	return []byte(r.ReadLine())
+}
+
+//x	ReadAll() string
+//x	ReadLine() string
+//x	ReadLineBytes() []byte
+//	SkipLines(n int)
+//	NextLine() bool
+//	Line() string
+//	LineBytes() []byte
+//	Parse(pattern string) []string
+//	Scanf(format string, v ...any)

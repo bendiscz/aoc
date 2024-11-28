@@ -52,7 +52,7 @@ func solve(p *Problem) {
 		sx, sy, bx, by := ParseInt(m[1]), ParseInt(m[2]), ParseInt(m[3]), ParseInt(m[4])
 		d := Abs(bx-sx) + Abs(by-sy)
 
-		for y, my := Max(0, sy-d), Min(d0, sy+d+1); y < my; y++ {
+		for y, my := max(0, sy-d), min(d0, sy+d+1); y < my; y++ {
 			w := 2*(d-Abs(sy-y)) + 1
 			bounds[y] = append(bounds[y], bound{sx - w/2, 1}, bound{sx + w/2 + 1, -1})
 		}

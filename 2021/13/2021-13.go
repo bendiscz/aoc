@@ -69,8 +69,8 @@ func (s sheet) Print() {
 	dots := make([]XY, 0, len(s))
 	for c := range s {
 		dots = append(dots, c)
-		mx = Max(mx, c.X+1)
-		my = Max(my, c.Y+1)
+		mx = max(mx, c.X+1)
+		my = max(my, c.Y+1)
 	}
 
 	blank := make([]byte, mx)

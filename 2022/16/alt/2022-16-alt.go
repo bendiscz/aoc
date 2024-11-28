@@ -182,7 +182,7 @@ func search2(start *node, valves int) int {
 	for i := 0; i < len(states); i++ {
 		s1 := &states[i]
 		n := sort.Search(len(states), func(i int) bool { return s1.count+states[i].count <= valves })
-		n = Max(n, i+1)
+		n = max(n, i+1)
 		if n == len(states) {
 			continue
 		}

@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestTask_Reset(t *testing.T) {
+func TestProblem_Reset(t *testing.T) {
 	in := Example("xyz")
 	if want, got := "xyz", in.ReadAll(); got != want {
 		t.Errorf("want: %#v, got: %#v", want, got)
@@ -21,7 +21,7 @@ func TestTask_Reset(t *testing.T) {
 	}
 }
 
-func TestTask_ReadLine(t *testing.T) {
+func TestProblem_ReadLine(t *testing.T) {
 	in := Example(`
 one
 two
@@ -52,7 +52,7 @@ three
 	}
 }
 
-func TestTask_ParseLine(t *testing.T) {
+func TestProblem_ParseLine(t *testing.T) {
 	in := Example(`
 1,2
 69,420
@@ -76,6 +76,56 @@ func TestTask_ParseLine(t *testing.T) {
 		t.Errorf("want: EOF, got: <next line>")
 	}
 	if want, got := []string(nil), in.Parse(`^(\d+),(\d+)$`); !reflect.DeepEqual(got, want) {
+		t.Errorf("want: %#v, got: %#v", want, got)
+	}
+}
+
+func TestProblem_PeekLine(t *testing.T) {
+	in := Example(`
+one
+two
+three
+`)
+	if want, got := "one", in.PeekLine(); got != want {
+		t.Errorf("want: %#v, got: %#v", want, got)
+	}
+
+	if !in.NextLine() {
+		t.Errorf("want: <next line>, got: EOF")
+	}
+	if want, got := "one", in.Line(); got != want {
+		t.Errorf("want: %#v, got: %#v", want, got)
+	}
+
+	if want, got := "two", in.PeekLine(); got != want {
+		t.Errorf("want: %#v, got: %#v", want, got)
+	}
+
+	if want, got := "two", in.PeekLine(); got != want {
+		t.Errorf("want: %#v, got: %#v", want, got)
+	}
+
+	in.NextLine()
+
+	if want, got := "three", in.PeekLine(); got != want {
+		t.Errorf("want: %#v, got: %#v", want, got)
+	}
+
+	if !in.NextLine() {
+		t.Errorf("want: <next line>, got: EOF")
+	}
+	if want, got := "three", in.Line(); got != want {
+		t.Errorf("want: %#v, got: %#v", want, got)
+	}
+
+	if want, got := "", in.PeekLine(); got != want {
+		t.Errorf("want: %#v, got: %#v", want, got)
+	}
+
+	if in.NextLine() {
+		t.Errorf("want: EOF, got: <next line>")
+	}
+	if want, got := "", in.Line(); got != want {
 		t.Errorf("want: %#v, got: %#v", want, got)
 	}
 }

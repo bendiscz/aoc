@@ -27,12 +27,13 @@ type LineReader interface {
 }
 
 type Problem struct {
-	desc   string
-	exam   bool
-	data   io.ReadSeeker
-	lines  *bufio.Scanner
-	line   string
-	silent bool
+	desc     string
+	exam     bool
+	data     io.ReadSeeker
+	lines    *bufio.Scanner
+	line     string
+	nextLine *string
+	silent   bool
 }
 
 func Example(s string) *Problem {
@@ -83,6 +84,7 @@ func (p *Problem) Reset() {
 	}
 
 	p.lines = nil
+	p.nextLine = nil
 }
 
 func (p *Problem) ReadAll() string {
@@ -113,15 +115,38 @@ func (p *Problem) ReadLineBytes() []byte {
 	return p.LineBytes()
 }
 
-func (p *Problem) NextLine() bool {
-	s := p.scanner()
-	if ok := s.Scan(); !ok {
-		p.line = ""
-		return false
+func (p *Problem) PeekLine() string {
+	if p.nextLine != nil {
+		return *p.nextLine
 	}
 
-	p.line = s.Text()
-	return true
+	if line, ok := p.readNextLine(); ok {
+		p.nextLine = &line
+		return line
+	} else {
+		return ""
+	}
+}
+
+func (p *Problem) NextLine() bool {
+	if p.nextLine != nil {
+		p.line = *p.nextLine
+		p.nextLine = nil
+		return true
+	}
+
+	line, ok := p.readNextLine()
+	p.line = line
+	return ok
+}
+
+func (p *Problem) readNextLine() (string, bool) {
+	s := p.scanner()
+	if ok := s.Scan(); !ok {
+		return "", false
+	}
+
+	return s.Text(), true
 }
 
 func (p *Problem) Line() string {

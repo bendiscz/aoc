@@ -12,7 +12,14 @@ var (
 	PosY = XY{0, 1}
 	NegY = XY{0, -1}
 
-	HVDirs = [...]XY{PosX, NegX, PosY, NegY}
+	Q1 = XY{1, 1}
+	Q2 = XY{-1, 1}
+	Q3 = XY{-1, -1}
+	Q4 = XY{1, -1}
+
+	HVDirs   = [...]XY{PosX, NegX, PosY, NegY}
+	DiagDirs = [...]XY{Q1, Q2, Q3, Q4}
+	AllDirs  = [...]XY{PosX, NegX, PosY, NegY, Q1, Q2, Q3, Q4}
 )
 
 type XY struct {

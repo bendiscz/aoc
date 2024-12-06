@@ -54,12 +54,12 @@ func solve(p *Problem) {
 	}
 	g.At(start).ch = '.'
 
-	path := map[XY]struct{}{}
-	trace(g, start, 0, path)
+	path := make([]XY, 0, g.Dim.X*g.Dim.Y)
+	trace(g, start, 0, &path)
 	p.PartOne(len(path))
 
 	s := 0
-	for pos := range path {
+	for _, pos := range path {
 		if pos == start {
 			continue
 		}
@@ -73,13 +73,13 @@ func solve(p *Problem) {
 	p.PartTwo(s)
 }
 
-func trace(g *grid, pos XY, dir int, path map[XY]struct{}) bool {
+func trace(g *grid, pos XY, dir int, path *[]XY) bool {
 	g.iter++
 
 	g.At(pos).v = g.iter
 	g.At(pos).d = 1 << dir
 	if path != nil {
-		path[pos] = struct{}{}
+		*path = append(*path, pos)
 	}
 
 	for {
@@ -101,10 +101,9 @@ func trace(g *grid, pos XY, dir int, path map[XY]struct{}) bool {
 		} else {
 			g.At(pos).v = g.iter
 			g.At(pos).d = 1 << dir
-		}
-
-		if path != nil {
-			path[pos] = struct{}{}
+			if path != nil {
+				*path = append(*path, pos)
+			}
 		}
 	}
 }

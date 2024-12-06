@@ -44,6 +44,10 @@ func solve(p *Problem) {
 func countXmas(g grid) int {
 	s := 0
 	g.Dim.ForEach(func(xy XY) {
+		if g.At(xy).V != 'X' {
+			return
+		}
+
 		for _, d := range AllDirs {
 			if x, ok := extractWord(g, xy, d); ok && x == "XMAS" {
 				s++

@@ -61,15 +61,15 @@ func solve(p *Problem) {
 		path[i] = i + 1
 	}
 	best1, best2 := math.MaxInt, math.MaxInt
-	Permutations(path, func(path []int) {
-		d := *dist.AtXY(0, path[0])
-		for i := 1; i < len(path); i++ {
-			d += *dist.AtXY(path[i-1], path[i])
+	for pp := range Permutations(path) {
+		d := *dist.AtXY(0, pp[0])
+		for i := 1; i < len(pp); i++ {
+			d += *dist.AtXY(pp[i-1], pp[i])
 		}
 
 		best1 = min(best1, d)
-		best2 = min(best2, d+*dist.AtXY(0, path[len(path)-1]))
-	})
+		best2 = min(best2, d+*dist.AtXY(0, pp[len(path)-1]))
+	}
 	p.PartOne(best1)
 	p.PartTwo(best2)
 }

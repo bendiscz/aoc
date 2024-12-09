@@ -77,17 +77,17 @@ func solve(p *Problem) {
 	}
 
 	max1, max2 := 0, 0
-	Permutations(v, func(_ []int) {
+	for vp := range Permutations(v) {
 		score := 0
-		for i := 0; i < len(v)-1; i++ {
-			score += g.score[pairOf(v[i], v[i+1])]
+		for i := 0; i < len(vp)-1; i++ {
+			score += g.score[pairOf(vp[i], vp[i+1])]
 		}
 		max2 = max(max2, score)
-		if v[0] == 0 {
-			score += g.score[pairOf(v[0], v[len(v)-1])]
+		if vp[0] == 0 {
+			score += g.score[pairOf(vp[0], vp[len(vp)-1])]
 			max1 = max(max1, score)
 		}
-	})
+	}
 
 	p.PartOne(max1)
 	p.PartTwo(max2)

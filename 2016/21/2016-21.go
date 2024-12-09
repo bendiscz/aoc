@@ -45,13 +45,12 @@ func solve(p *Problem) {
 	}
 
 	const scrambled = "fbgdceah"
-	unscrambled := ""
-	Permutations([]byte(input), func(pw []byte) {
+	for pw := range Permutations([]byte(input)) {
 		if scramble(string(pw), steps) == scrambled {
-			unscrambled = string(pw)
+			p.PartTwo(string(pw))
+			break
 		}
-	})
-	p.PartTwo(unscrambled)
+	}
 }
 
 func scramble(input string, steps []string) string {

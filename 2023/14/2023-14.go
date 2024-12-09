@@ -50,13 +50,13 @@ func solve(p *Problem) {
 
 	rollUp(g)
 	p.PartOne(load(g))
-	rollUp(g.TransView())
+	rollUp(g.Trans())
 	rollDown(g)
-	rollDown(g.TransView())
+	rollDown(g.Trans())
 
 	grids, cycles, period := []grid(nil), 1, 0
 	for period == 0 {
-		grids = append(grids, grid{CopyMatrix[cell](g)})
+		grids = append(grids, grid{CloneGrid[cell](g)})
 		cycle(g)
 		cycles++
 		for i := 1; i <= len(grids); i++ {
@@ -82,9 +82,9 @@ func load(g grid) int {
 
 func cycle(g grid) {
 	rollUp(g)
-	rollUp(g.TransView())
+	rollUp(g.Trans())
 	rollDown(g)
-	rollDown(g.TransView())
+	rollDown(g.Trans())
 }
 
 func rollUp(g Grid[cell]) {

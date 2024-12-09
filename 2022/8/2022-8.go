@@ -39,7 +39,7 @@ func solve(p *Problem) {
 		ParseVectorFunc(row, p.Line(), func(ch byte) tree { return tree{height: int8(ch - '0')} })
 	}
 
-	p.PartOne(countRows(m, 1) + countRows(m.TransView(), 2))
+	p.PartOne(countRows(m, 1) + countRows(m.Trans(), 2))
 
 	max := 0
 	for x := 0; x < m.Dim.X; x++ {

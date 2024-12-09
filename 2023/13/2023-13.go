@@ -54,7 +54,7 @@ func (g *grid) count(smudge bool) int {
 	if y, ok := checkRows(g.Matrix, smudge); ok {
 		return 100 * y
 	}
-	if x, ok := checkRows(g.Matrix.TransView(), smudge); ok {
+	if x, ok := checkRows(g.Matrix.Trans(), smudge); ok {
 		return x
 	}
 	panic("no reflection")

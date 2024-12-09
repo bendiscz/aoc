@@ -2,6 +2,7 @@ package aoc
 
 import (
 	"fmt"
+	"iter"
 
 	"golang.org/x/exp/constraints"
 )
@@ -72,13 +73,43 @@ func MinXY(xy XY, xys ...XY) XY {
 	return xy
 }
 
+func (c XY) All() iter.Seq[XY] {
+	return func(yield func(XY) bool) {
+		for y := 0; y < c.Y; y++ {
+			for x := 0; x < c.X; x++ {
+				yield(XY{X: x, Y: y})
+			}
+		}
+	}
+}
+
 type Grid[T any] interface {
 	Size() XY
 	At(c XY) *T
 	AtXY(x, y int) *T
 	Row(y int) Vector[T]
 	Column(x int) Vector[T]
-	TransView() Grid[T]
+	Trans() Grid[T]
+	FlipX() Grid[T]
+	FlipY() Grid[T]
+	RotateR() Grid[T]
+	RotateL() Grid[T]
+	SubGrid(off, dim XY) Grid[T]
+	All() iter.Seq2[XY, *T]
+}
+
+func iterateGrid[T any](g Grid[T]) iter.Seq2[XY, *T] {
+	return func(yield func(XY, *T) bool) {
+		dim := g.Size()
+		for y := 0; y < dim.Y; y++ {
+			for x := 0; x < dim.X; x++ {
+				xy := XY{X: x, Y: y}
+				if !yield(xy, g.At(xy)) {
+					return
+				}
+			}
+		}
+	}
 }
 
 type Vector[T any] interface {
@@ -102,22 +133,18 @@ func NewMatrix[T any](dim XY) *Matrix[T] {
 	return m
 }
 
-func CopyMatrix[T any](g Grid[T]) *Matrix[T] {
-	m := NewMatrix[T](g.Size())
-	for x := 0; x < m.Dim.X; x++ {
-		for y := 0; y < m.Dim.Y; y++ {
-			m.Data[y][x] = *g.AtXY(x, y)
-		}
-	}
-	return m
-}
-
-func (m *Matrix[T]) Size() XY               { return m.Dim }
-func (m *Matrix[T]) At(c XY) *T             { return m.AtXY(c.X, c.Y) }
-func (m *Matrix[T]) AtXY(x, y int) *T       { return &m.Data[y][x] }
-func (m *Matrix[T]) Row(y int) Vector[T]    { return matrixRow[T]{m, y} }
-func (m *Matrix[T]) Column(x int) Vector[T] { return matrixColumn[T]{m, x} }
-func (m *Matrix[T]) TransView() Grid[T]     { return transMatrixView[T]{m} }
+func (m *Matrix[T]) Size() XY                    { return m.Dim }
+func (m *Matrix[T]) At(c XY) *T                  { return m.AtXY(c.X, c.Y) }
+func (m *Matrix[T]) AtXY(x, y int) *T            { return &m.Data[y][x] }
+func (m *Matrix[T]) Row(y int) Vector[T]         { return matrixRow[T]{m, y} }
+func (m *Matrix[T]) Column(x int) Vector[T]      { return matrixColumn[T]{m, x} }
+func (m *Matrix[T]) Trans() Grid[T]              { return gridView[T]{grid: m}.Trans() }
+func (m *Matrix[T]) FlipX() Grid[T]              { return gridView[T]{grid: m}.FlipX() }
+func (m *Matrix[T]) FlipY() Grid[T]              { return gridView[T]{grid: m}.FlipY() }
+func (m *Matrix[T]) RotateR() Grid[T]            { return gridView[T]{grid: m}.RotateR() }
+func (m *Matrix[T]) RotateL() Grid[T]            { return gridView[T]{grid: m}.RotateL() }
+func (m *Matrix[T]) SubGrid(off, dim XY) Grid[T] { return subGrid[T]{m, off, dim} }
+func (m *Matrix[T]) All() iter.Seq2[XY, *T]      { return iterateGrid(m) }
 
 func (m *Matrix[T]) AppendRow() Vector[T] {
 	m.Data = append(m.Data, make([]T, m.Dim.X))
@@ -140,17 +167,6 @@ type matrixColumn[T any] struct {
 
 func (c matrixColumn[T]) Len() int    { return c.m.Size().Y }
 func (c matrixColumn[T]) At(i int) *T { return c.m.AtXY(c.x, i) }
-
-type transMatrixView[T any] struct {
-	m *Matrix[T]
-}
-
-func (t transMatrixView[T]) Size() XY               { return t.m.Size().Trans() }
-func (t transMatrixView[T]) At(c XY) *T             { return t.m.At(c.Trans()) }
-func (t transMatrixView[T]) AtXY(x, y int) *T       { return t.m.AtXY(y, x) }
-func (t transMatrixView[T]) Row(y int) Vector[T]    { return t.m.Column(y) }
-func (t transMatrixView[T]) Column(x int) Vector[T] { return t.m.Row(x) }
-func (t transMatrixView[T]) TransView() Grid[T]     { return t.m }
 
 type Slice[T any] []T
 
@@ -178,6 +194,25 @@ func ParseVectorMap[T any](s Vector[T], line string, mapping map[byte]T) {
 func ParseVectorFunc[T any](s Vector[T], line string, mapping func(byte) T) {
 	for i, ch := range []byte(line) {
 		*s.At(i) = mapping(ch)
+	}
+}
+
+func CloneGrid[T any](g Grid[T]) *Matrix[T] {
+	m := NewMatrix[T](g.Size())
+	for x := 0; x < m.Dim.X; x++ {
+		for y := 0; y < m.Dim.Y; y++ {
+			m.Data[y][x] = *g.AtXY(x, y)
+		}
+	}
+	return m
+}
+
+func CopyGrid[T any](dst, src Grid[T]) {
+	dim := MinXY(dst.Size(), src.Size())
+	for x := 0; x < dim.X; x++ {
+		for y := 0; y < dim.X; y++ {
+			*dst.AtXY(x, y) = *src.AtXY(x, y)
+		}
 	}
 }
 
@@ -229,3 +264,121 @@ type ByteCell struct {
 func (c ByteCell) String() string {
 	return fmt.Sprintf("%c", c.V)
 }
+
+type gridView[T any] struct {
+	grid Grid[T]
+	negX bool
+	negY bool
+	swap bool
+}
+
+func (g gridView[T]) Size() XY {
+	if g.swap {
+		return g.grid.Size().Trans()
+	}
+	return g.grid.Size()
+}
+
+func (g gridView[T]) At(c XY) *T {
+	return g.AtXY(c.X, c.Y)
+}
+
+func (g gridView[T]) AtXY(x, y int) *T {
+	dim := g.grid.Size()
+	if g.swap {
+		x, y = y, x
+	}
+	if g.negX {
+		x = dim.X - 1 - x
+	}
+	if g.negY {
+		y = dim.Y - 1 - y
+	}
+	return g.grid.AtXY(x, y)
+}
+
+func (g gridView[T]) Row(y int) Vector[T]    { return gridViewRow[T]{g, y} }
+func (g gridView[T]) Column(x int) Vector[T] { return gridViewColumn[T]{g, x} }
+
+func (g gridView[T]) Trans() Grid[T] {
+	return gridView[T]{
+		grid: g.grid,
+		negX: g.negX,
+		negY: g.negY,
+		swap: !g.swap,
+	}
+}
+
+func (g gridView[T]) FlipX() Grid[T] {
+	return gridView[T]{
+		grid: g.grid,
+		negX: !g.negX != g.swap,
+		negY: g.negY != g.swap,
+		swap: g.swap,
+	}
+}
+
+func (g gridView[T]) FlipY() Grid[T] {
+	return gridView[T]{
+		grid: g.grid,
+		negX: g.negX != g.swap,
+		negY: !g.negY != g.swap,
+		swap: g.swap,
+	}
+}
+
+func (g gridView[T]) RotateR() Grid[T]            { return g.Trans().FlipX() }
+func (g gridView[T]) RotateL() Grid[T]            { return g.Trans().FlipY() }
+func (g gridView[T]) SubGrid(off, dim XY) Grid[T] { return subGrid[T]{g, off, dim} }
+func (g gridView[T]) All() iter.Seq2[XY, *T]      { return iterateGrid(g) }
+
+type gridViewRow[T any] struct {
+	gridView[T]
+	y int
+}
+
+func (g gridViewRow[T]) Len() int    { return g.Size().X }
+func (g gridViewRow[T]) At(i int) *T { return g.AtXY(i, g.y) }
+
+type gridViewColumn[T any] struct {
+	gridView[T]
+	x int
+}
+
+func (g gridViewColumn[T]) Len() int    { return g.Size().X }
+func (g gridViewColumn[T]) At(i int) *T { return g.AtXY(g.x, i) }
+
+type subGrid[T any] struct {
+	grid Grid[T]
+	off  XY
+	dim  XY
+}
+
+func (g subGrid[T]) Size() XY                    { return g.dim }
+func (g subGrid[T]) At(c XY) *T                  { return g.grid.At(c.Add(g.off)) }
+func (g subGrid[T]) AtXY(x, y int) *T            { return g.grid.AtXY(x+g.off.X, y+g.off.Y) }
+func (g subGrid[T]) Row(y int) Vector[T]         { return subGridRow[T]{g, y + g.off.Y} }
+func (g subGrid[T]) Column(x int) Vector[T]      { return subGridColumn[T]{g, x + g.off.X} }
+func (g subGrid[T]) Trans() Grid[T]              { return gridView[T]{grid: g}.Trans() }
+func (g subGrid[T]) FlipX() Grid[T]              { return gridView[T]{grid: g}.FlipX() }
+func (g subGrid[T]) FlipY() Grid[T]              { return gridView[T]{grid: g}.FlipY() }
+func (g subGrid[T]) RotateR() Grid[T]            { return gridView[T]{grid: g}.RotateR() }
+func (g subGrid[T]) RotateL() Grid[T]            { return gridView[T]{grid: g}.RotateL() }
+func (g subGrid[T]) SubGrid(off, dim XY) Grid[T] { return subGrid[T]{g.grid, g.off.Add(off), dim} }
+func (g subGrid[T]) All() iter.Seq2[XY, *T]      { return iterateGrid(g) }
+
+type subGridRow[T any] struct {
+	subGrid[T]
+	y int
+}
+
+func (g subGridRow[T]) Len() int    { return g.dim.X }
+func (g subGridRow[T]) At(i int) *T { return g.grid.AtXY(i+g.off.X, g.y) }
+
+type subGridColumn[T any] struct {
+	subGrid[T]
+	x int
+}
+
+func (g subGridColumn[T]) Len() int    { return g.dim.Y }
+func (g subGridColumn[T]) At(i int) *T { return g.grid.AtXY(g.x, i+g.off.Y) }

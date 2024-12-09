@@ -101,14 +101,14 @@ func solve(p *Problem) {
 	}
 
 	s2, i := 0, 0
-	for _, b := range ss {
-		if b.b.free {
-			i += b.size
+	for _, sq := range ss {
+		if sq.b.free {
+			i += sq.size
 		} else {
-			for b.size > 0 {
-				s2 += i * b.b.id
+			for sq.size > 0 {
+				s2 += i * sq.b.id
 				i++
-				b.size--
+				sq.size--
 			}
 		}
 	}

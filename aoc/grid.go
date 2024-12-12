@@ -8,6 +8,8 @@ import (
 )
 
 var (
+	XY0 = XY{0, 0}
+
 	PosX = XY{1, 0}
 	NegX = XY{-1, 0}
 	PosY = XY{0, 1}
@@ -207,10 +209,24 @@ func CloneGrid[T any](g Grid[T]) *Matrix[T] {
 	return m
 }
 
+func CollectGrid[T any, V any](cells map[XY]V, fn func(V) T) (*Matrix[T], XY) {
+	l, h := XY0, XY0
+	for k := range cells {
+		l = MinXY(l, k)
+		h = MaxXY(h, k)
+	}
+	dim := h.Sub(l).Add(Square(1))
+	m := NewMatrix[T](dim)
+	for c, v := range cells {
+		*m.At(c.Sub(l)) = fn(v)
+	}
+	return m, l
+}
+
 func CopyGrid[T any](dst, src Grid[T]) {
 	dim := MinXY(dst.Size(), src.Size())
 	for x := 0; x < dim.X; x++ {
-		for y := 0; y < dim.X; y++ {
+		for y := 0; y < dim.Y; y++ {
 			*dst.AtXY(x, y) = *src.AtXY(x, y)
 		}
 	}

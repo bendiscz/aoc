@@ -55,11 +55,7 @@ func solve(p *Problem) {
 }
 
 func solveAB(ax, ay, bx, by, px, py int) (int, int, bool) {
-	d := by*ax - ay*bx
-	if d == 0 {
-		return 0, 0, false
-	}
-	b := (py*ax - ay*px) / d
+	b := (py*ax - ay*px) / (by*ax - ay*bx)
 	a := (px - b*bx) / ax
 
 	if ax*a+bx*b == px && ay*a+by*b == py {

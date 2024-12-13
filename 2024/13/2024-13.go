@@ -58,7 +58,7 @@ func solveAB(ax, ay, bx, by, px, py int) (int, int, bool) {
 	b := (py*ax - ay*px) / (by*ax - ay*bx)
 	a := (px - b*bx) / ax
 
-	if ax*a+bx*b == px && ay*a+by*b == py {
+	if a >= 0 && b >= 0 && ax*a+bx*b == px && ay*a+by*b == py {
 		return a, b, true
 	}
 	return 0, 0, false

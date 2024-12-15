@@ -47,6 +47,14 @@ func GCD[T constraints.Integer](a, b T) T {
 	return a
 }
 
+func GCDExt[T constraints.Integer](a, b T) (T, T, T) {
+	if a == 0 {
+		return b, 0, 1
+	}
+	gcd, x, y := GCDExt[T](b%a, a)
+	return gcd, y - (b/a)*x, x
+}
+
 func LCM[T constraints.Integer](a, b T) T {
 	return a / GCD(a, b) * b
 }

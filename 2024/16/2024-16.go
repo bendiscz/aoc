@@ -120,8 +120,8 @@ func findPath(g grid, start, end XY) int {
 	})
 	q.Push(k)
 
-	best := math.MaxInt
-	checkState := func(k, next key, w int, fix *bool) {
+	best, fix := math.MaxInt, false
+	checkState := func(k, next key, w int) {
 		if g.At(next.at).ch == '#' {
 			return
 		}
@@ -135,7 +135,7 @@ func findPath(g grid, start, end XY) int {
 			return
 		}
 
-		*fix = s.w < math.MaxInt
+		fix = s.w < math.MaxInt
 		s.w = w
 		s.inc = []key{k}
 		if next.at == end {
@@ -146,18 +146,20 @@ func findPath(g grid, start, end XY) int {
 	}
 
 	for q.Len() > 0 {
+		if fix {
+			q.Fix()
+			fix = false
+		}
+
 		k = q.Pop()
 		if k.at == end {
 			continue
 		}
 
-		s, fix := g.state(k), false
-		checkState(k, k.forward(), s.w+1, &fix)
-		checkState(k, k.left(), s.w+1000, &fix)
-		checkState(k, k.right(), s.w+1000, &fix)
-		if fix {
-			q.Fix()
-		}
+		s := g.state(k)
+		checkState(k, k.forward(), s.w+1)
+		checkState(k, k.left(), s.w+1000)
+		checkState(k, k.right(), s.w+1000)
 	}
 
 	return best

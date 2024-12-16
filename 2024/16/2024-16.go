@@ -50,7 +50,7 @@ type grid struct {
 }
 
 func (g grid) state(k key) *state {
-	c := g.At(k.at)
+	c := g.At(k.p)
 	s := c.s[k.d]
 	if s == nil {
 		s = &state{w: math.MaxInt}
@@ -62,13 +62,13 @@ func (g grid) state(k key) *state {
 var dirs = [...]XY{PosX, PosY, NegX, NegY}
 
 type key struct {
-	at XY
-	d  int
+	p XY
+	d int
 }
 
-func (k key) left() key    { return key{k.at, (k.d + 3) % 4} }
-func (k key) right() key   { return key{k.at, (k.d + 1) % 4} }
-func (k key) forward() key { return key{k.at.Add(dirs[k.d]), k.d} }
+func (k key) left() key    { return key{k.p, (k.d + 3) % 4} }
+func (k key) right() key   { return key{k.p, (k.d + 1) % 4} }
+func (k key) forward() key { return key{k.p.Add(dirs[k.d]), k.d} }
 
 type state struct {
 	w   int
@@ -112,7 +112,7 @@ func solve(p *Problem) {
 }
 
 func findPath(g grid, start, end XY) int {
-	k := key{at: start}
+	k := key{p: start}
 	g.state(k).w = 0
 
 	q := NewHeap[key](func(k1, k2 key) bool {
@@ -122,7 +122,7 @@ func findPath(g grid, start, end XY) int {
 
 	best, fix := math.MaxInt, false
 	checkState := func(k, next key, w int) {
-		if g.At(next.at).ch == '#' {
+		if g.At(next.p).ch == '#' {
 			return
 		}
 
@@ -138,7 +138,7 @@ func findPath(g grid, start, end XY) int {
 		fix = s.w < math.MaxInt
 		s.w = w
 		s.inc = []key{k}
-		if next.at == end {
+		if next.p == end {
 			best = min(best, w)
 		} else {
 			q.Push(next)
@@ -152,7 +152,7 @@ func findPath(g grid, start, end XY) int {
 		}
 
 		k = q.Pop()
-		if k.at == end {
+		if k.p == end {
 			continue
 		}
 
@@ -166,7 +166,7 @@ func findPath(g grid, start, end XY) int {
 }
 
 func backtrack(g grid, k key) {
-	g.At(k.at).v = true
+	g.At(k.p).v = true
 	for _, prev := range g.state(k).inc {
 		backtrack(g, prev)
 	}

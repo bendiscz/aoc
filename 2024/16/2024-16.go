@@ -127,10 +127,9 @@ func findPath(g grid, start, end XY) int {
 		}
 
 		s := g.state(next)
-		if w > s.w {
+		if w > s.w || w > best {
 			return
 		}
-
 		if w == s.w {
 			s.inc = append(s.inc, k)
 			return
@@ -141,11 +140,9 @@ func findPath(g grid, start, end XY) int {
 		s.inc = []key{k}
 		if next.at == end {
 			best = min(best, w)
-			return
+		} else {
+			q.Push(next)
 		}
-
-		q.Push(next)
-		return
 	}
 
 	for q.Len() > 0 {

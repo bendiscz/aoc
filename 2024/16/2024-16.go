@@ -49,30 +49,40 @@ type grid struct {
 	*Matrix[cell]
 }
 
-func (g grid) state(k key) *state {
-	c := g.At(k.p)
-	s := c.s[k.d]
+func (g grid) state(r reindeer) *state {
+	c := g.At(r.p)
+	s := c.s[r.d]
 	if s == nil {
 		s = &state{w: math.MaxInt}
-		c.s[k.d] = s
+		c.s[r.d] = s
 	}
 	return s
 }
 
 var dirs = [...]XY{PosX, PosY, NegX, NegY}
 
-type key struct {
+type reindeer struct {
 	p XY
 	d int
 }
 
-func (k key) left() key    { return key{k.p, (k.d + 3) % 4} }
-func (k key) right() key   { return key{k.p, (k.d + 1) % 4} }
-func (k key) forward() key { return key{k.p.Add(dirs[k.d]), k.d} }
+type step struct {
+	r reindeer
+	w int
+}
+
+func (r reindeer) nextSteps() []step {
+	dl, dr := (r.d+3)%4, (r.d+1)%4
+	return []step{
+		{reindeer{r.p.Add(dirs[r.d]), r.d}, 1},
+		{reindeer{r.p.Add(dirs[dl]), dl}, 1001},
+		{reindeer{r.p.Add(dirs[dr]), dr}, 1001},
+	}
+}
 
 type state struct {
-	w   int
-	inc []key
+	w    int
+	back []reindeer
 }
 
 func main() {
@@ -96,10 +106,9 @@ func solve(p *Problem) {
 
 	p.PartOne(findPath(g, start, end))
 
-	for d := 1; d <= 3; d++ {
-		backtrack(g, key{end, d})
+	for d := 0; d < 4; d++ {
+		backtrack(g, reindeer{end, d})
 	}
-
 	//PrintGrid(g)
 
 	s2 := 0
@@ -112,62 +121,54 @@ func solve(p *Problem) {
 }
 
 func findPath(g grid, start, end XY) int {
-	k := key{p: start}
-	g.state(k).w = 0
+	r := reindeer{p: start}
+	g.state(r).w = 0
 
-	q := NewHeap[key](func(k1, k2 key) bool {
-		return g.state(k1).w < g.state(k2).w
+	q := NewHeap[reindeer](func(r1, r2 reindeer) bool {
+		return g.state(r1).w < g.state(r2).w
 	})
-	q.Push(k)
+	q.Push(r)
 
-	best, fix := math.MaxInt, false
-	checkState := func(k, next key, w int) {
-		if g.At(next.p).ch == '#' {
-			return
-		}
-
-		s := g.state(next)
-		if w > s.w || w > best {
-			return
-		}
-		if w == s.w {
-			s.inc = append(s.inc, k)
-			return
-		}
-
-		fix = s.w < math.MaxInt
-		s.w = w
-		s.inc = []key{k}
-		if next.p == end {
-			best = min(best, w)
-		} else {
-			q.Push(next)
-		}
-	}
-
+	best := math.MaxInt
 	for q.Len() > 0 {
+		r = q.Pop()
+		s, fix := g.state(r), false
+
+		for _, n := range r.nextSteps() {
+			if g.At(n.r.p).ch == '#' {
+				continue
+			}
+			w, ns := s.w+n.w, g.state(n.r)
+			if w > ns.w || w > best {
+				continue
+			}
+			if w == ns.w {
+				ns.back = append(ns.back, r)
+				continue
+			}
+
+			if ns.w < math.MaxInt {
+				fix = true
+			}
+			ns.w = w
+			ns.back = []reindeer{r}
+
+			if n.r.p == end {
+				best = min(best, w)
+			} else {
+				q.Push(n.r)
+			}
+		}
 		if fix {
 			q.Fix()
-			fix = false
 		}
-
-		k = q.Pop()
-		if k.p == end {
-			continue
-		}
-
-		s := g.state(k)
-		checkState(k, k.forward(), s.w+1)
-		checkState(k, k.left(), s.w+1000)
-		checkState(k, k.right(), s.w+1000)
 	}
-
 	return best
 }
 
-func backtrack(g grid, k key) {
-	g.At(k.p).v = true
-	for _, prev := range g.state(k).inc {
-		backtrack(g, prev)
+func backtrack(g grid, r reindeer) {
+	g.At(r.p).v = true
+	for _, b := range g.state(r).back {
+		backtrack(g, b)
 	}
 }

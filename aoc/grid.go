@@ -233,8 +233,9 @@ func CopyGrid[T any](dst, src Grid[T]) {
 }
 
 const (
-	SymbolEmpty = "·"
-	SymbolFull  = "█"
+	SymbolEmpty  = "·"
+	SymbolBullet = "•"
+	SymbolFull   = "█"
 )
 
 func PrintGridFunc[T any](g Grid[T], fn func(T) string) {

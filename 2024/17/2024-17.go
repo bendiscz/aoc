@@ -2,6 +2,7 @@ package main
 
 import (
 	. "github.com/bendiscz/aoc/aoc"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -36,20 +37,32 @@ func solve(p *Problem) {
 	p.NextLine()
 	prog := ParseInts(p.Line())
 
-	s1 := strings.Builder{}
-	for i, x := range eval(prog, a, b, c) {
-		if i > 0 {
-			s1.WriteByte(',')
-		}
-		s1.WriteString(strconv.Itoa(x))
-	}
-	p.PartOne(s1.String())
+	p.PartOne(formatOutput(eval(prog, a, b, c)))
 
 	if p.Example() {
 		return
 	}
 
-	p.PartTwo(solveQuine(prog))
+	a = solveQuine(prog)
+	p.PartTwo(a)
+
+	out := eval(prog, a, b, c)
+	r := "OK"
+	if !slices.Equal(out, prog) {
+		r = "Fail"
+	}
+	p.Printf("test: %s %s", formatOutput(out), r)
+}
+
+func formatOutput(out []int) string {
+	s := strings.Builder{}
+	for i, x := range out {
+		if i > 0 {
+			s.WriteByte(',')
+		}
+		s.WriteString(strconv.Itoa(x))
+	}
+	return s.String()
 }
 
 func solveQuine(prog []int) int {

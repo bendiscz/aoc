@@ -33,9 +33,9 @@ func solve(p *Problem) {
 		g.At(xy).blocked = true
 	}
 
-	i, xy, f := len(bs), XY0, true
+	i, xy, tryFill := len(bs), XY0, true
 	for i >= 0 {
-		if f && fill(g, xy) {
+		if tryFill && fill(g, xy) {
 			if i < len(bs) {
 				p.Printf("%d,%d", bs[i].X, bs[i].Y)
 			} else {
@@ -48,10 +48,10 @@ func solve(p *Problem) {
 		c := g.At(bs[i])
 		c.blocked = false
 		if c.touched {
-			f = true
+			tryFill = true
 			xy = bs[i]
 		} else {
-			f = false
+			tryFill = false
 		}
 	}
 }

@@ -61,7 +61,7 @@ func ShortestPath[V Vertex](start, finish V) Path[V] {
 	return paths[0]
 }
 
-func ShortestPaths[V Vertex](start V, check func(V) (bool, bool)) []Path[V] {
+func ShortestPaths[V Vertex](start V, check func(V) (term, stop bool)) []Path[V] {
 	paths := []Path[V](nil)
 	startNode := &dijkstraNode[V]{start, nil, 0, 0, 0}
 

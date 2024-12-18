@@ -44,10 +44,16 @@ func main() {
 }
 
 type cell struct {
-	ch byte
+	v bool
 }
 
-func (c cell) String() string { return string([]byte{c.ch}) }
+func (c cell) String() string {
+	if c.v {
+		return "#"
+	} else {
+		return "."
+	}
+}
 
 type grid struct {
 	*Matrix[cell]
@@ -66,7 +72,7 @@ func (v vertex) Edges() []Edge {
 	e := []Edge(nil)
 	for _, d := range HVDirs {
 		xy := v.at.Add(d)
-		if !v.g.Dim.HasInside(xy) || v.g.At(xy).ch == '#' {
+		if !v.g.Dim.HasInside(xy) || v.g.At(xy).v {
 			continue
 		}
 		e = append(e, Edge{
@@ -84,10 +90,6 @@ func solve(p *Problem) {
 	}
 
 	g := grid{NewMatrix[cell](Square(N))}
-	for _, c := range g.All() {
-		c.ch = '.'
-	}
-
 	bytes := []XY(nil)
 	for p.NextLine() {
 		f := ParseInts(p.Line())
@@ -95,18 +97,18 @@ func solve(p *Problem) {
 	}
 
 	for _, b := range bytes[:B] {
-		g.At(b).ch = '#'
+		g.At(b).v = true
 	}
 	start, end := vertex{g, XY0}, vertex{g, Square(N - 1)}
 	path := ShortestPath(start, end)
 	p.PartOne(len(path.Steps) - 1)
 
 	for _, b := range bytes[B:] {
-		g.At(b).ch = '#'
+		g.At(b).v = true
 	}
 	for i := len(bytes) - 1; i >= B; i-- {
 		b := bytes[i]
-		g.At(b).ch = '.'
+		g.At(b).v = false
 		path = ShortestPath(start, end)
 		if len(path.Steps) > 0 {
 			p.PartTwo(fmt.Sprintf("%d,%d", b.X, b.Y))

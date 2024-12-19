@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"time"
@@ -45,7 +47,12 @@ func Example(s string) *Problem {
 }
 
 func Day(year, day int) *Problem {
-	f := fetcher{}
+	dir, err := getProjectRoot()
+	if err != nil {
+		log.Panicf("failed to detect project root: %v", err)
+	}
+
+	f := fetcher{dir: dir}
 	return &Problem{
 		desc: "actual",
 		data: f.fetchInput(year, day),
@@ -192,46 +199,23 @@ func (p *Problem) scanner() *bufio.Scanner {
 	return p.lines
 }
 
-type blockLineReader struct {
-	*Problem
-	finished bool
-}
-
-func (r *blockLineReader) readLine() string {
-	if r.finished {
-		return ""
+func getProjectRoot() (string, error) {
+	dir, err := os.Getwd()
+	if err != nil {
+		return "", fmt.Errorf("could not get current working directory: %v", err)
 	}
-
-	line := r.ReadLine()
-	if line == "" {
-		r.finished = true
+	for {
+		_, err = os.Stat(filepath.Join(dir, "go.mod"))
+		if err == nil {
+			return dir, nil
+		}
+		if !os.IsNotExist(err) {
+			return "", fmt.Errorf("failed to stat go.mod: %v", err)
+		}
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			return "", fmt.Errorf("could not find go.mod in working directory and its parents")
+		}
+		dir = parent
 	}
-
-	return line
 }
-
-func (r *blockLineReader) ReadAll() string {
-	all := strings.Builder{}
-	for line := r.readLine(); line != ""; line = r.readLine() {
-		all.WriteString(line)
-	}
-	return all.String()
-}
-
-func (r *blockLineReader) ReadLine() string {
-	return r.readLine()
-}
-
-func (r *blockLineReader) ReadLineBytes() []byte {
-	return []byte(r.ReadLine())
-}
-
-//x	ReadAll() string
-//x	ReadLine() string
-//x	ReadLineBytes() []byte
-//	SkipLines(n int)
-//	NextLine() bool
-//	Line() string
-//	LineBytes() []byte
-//	Parse(pattern string) []string
-//	Scanf(format string, v ...any)

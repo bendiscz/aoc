@@ -86,7 +86,7 @@ func solve(p *Problem) {
 }
 
 func count(t []trie, towel string) int {
-	d, ls := make([]int, len(towel)+1), []int(nil)
+	d, ls := make([]int, len(towel)+1), make([]int, 0, 64)
 	d[0] = 1
 	for i := 0; i < len(towel); i++ {
 		ls = matchTrie(t, towel[i:], ls[:0])

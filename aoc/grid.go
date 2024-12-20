@@ -3,6 +3,7 @@ package aoc
 import (
 	"fmt"
 	"iter"
+	"math"
 
 	"golang.org/x/exp/constraints"
 )
@@ -23,6 +24,9 @@ var (
 	HVDirs   = [...]XY{PosX, NegX, PosY, NegY}
 	DiagDirs = [...]XY{Q1, Q2, Q3, Q4}
 	AllDirs  = [...]XY{PosX, NegX, PosY, NegY, Q1, Q2, Q3, Q4}
+
+	MinIntXY = XY{math.MinInt, math.MinInt}
+	MaxIntXY = XY{math.MaxInt, math.MaxInt}
 )
 
 type XY struct {

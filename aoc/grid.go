@@ -45,6 +45,10 @@ func (c XY) Add(d XY) XY { return XY{c.X + d.X, c.Y + d.Y} }
 func (c XY) Sub(d XY) XY { return XY{c.X - d.X, c.Y - d.Y} }
 func (c XY) Neg() XY     { return XY{-c.X, -c.Y} }
 
+func (c XY) Man(c2 XY) int {
+	return Abs(c.X-c2.X) + Abs(c.Y-c2.Y)
+}
+
 func Rectangle(x, y int) XY {
 	return XY{x, y}
 }

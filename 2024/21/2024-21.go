@@ -63,9 +63,8 @@ func (p pad) searchDirs(at, to XY, seq string) []string {
 }
 
 type state struct {
-	seq   string
+	code  string
 	depth int
-	limit int
 }
 
 var (
@@ -88,14 +87,14 @@ func solve(p *Problem) {
 }
 
 func complexity(code string, depth int) int {
-	return ParseInt(code[:len(code)-1]) * countPresses(numPad, code, depth, depth)
+	return ParseInt(code[:len(code)-1]) * countPresses(&numPad, code, depth, depth)
 }
 
-func countPresses(p pad, code string, depth, limit int) int {
+func countPresses(p *pad, code string, depth, limit int) int {
 	if depth < 0 {
 		return len(code)
 	}
-	if r, ok := cache[state{code, depth, limit}]; ok {
+	if r, ok := cache[state{code, depth}]; ok {
 		return r
 	}
 
@@ -104,11 +103,11 @@ func countPresses(p pad, code string, depth, limit int) int {
 		seqs, best := []string(nil), math.MaxInt
 		seqs, at = p.move(at, code[i])
 		for _, seq := range seqs {
-			best = min(best, countPresses(dirPad, seq, depth-1, limit))
+			best = min(best, countPresses(&dirPad, seq, depth-1, limit))
 		}
 		r += best
 	}
 
-	cache[state{code, depth, limit}] = r
+	cache[state{code, depth}] = r
 	return r
 }

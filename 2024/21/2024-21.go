@@ -31,10 +31,7 @@ type pad struct {
 func newPad(s string) pad {
 	f := SplitFieldsDelim(s, "|")
 	dx, dy := len(f[0]), len(f)
-	p := pad{
-		keys:   f,
-		coords: map[byte]XY{},
-	}
+	p := pad{keys: f, coords: map[byte]XY{}}
 	for y := 0; y < dy; y++ {
 		for x := 0; x < dx; x++ {
 			p.coords[p.keys[y][x]] = XY{X: x, Y: y}

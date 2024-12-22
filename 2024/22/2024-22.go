@@ -13,6 +13,7 @@ const (
 2
 3
 2024
+
 `
 )
 
@@ -31,7 +32,7 @@ func next(x int) int {
 	return x
 }
 
-type diff [4]int
+type diff [4]uint8
 
 func generateSecrets(sums map[diff]int, seed, n int) int {
 	x, prev, d := seed, seed%10, diff{}
@@ -41,7 +42,7 @@ func generateSecrets(sums map[diff]int, seed, n int) int {
 		x = next(x)
 		b := x % 10
 		copy(d[:], d[1:])
-		d[3], prev = b-prev, b
+		d[3], prev = uint8(b-prev), b
 		if i >= 4 && !seen.Contains(d) {
 			seen[d] = SET
 			sums[d] += b

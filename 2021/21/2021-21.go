@@ -68,7 +68,16 @@ func diracDice() [][2]int {
 	return d
 }
 
+type state struct{ player, p1, p2, s1, s2 int }
+type result struct{ sc1, sc2 int }
+
+var cache = map[state]result{}
+
 func playDirac(player, p1, p2, s1, s2 int) (int, int) {
+	if r, ok := cache[state{player, p1, p2, s1, s2}]; ok {
+		return r.sc1, r.sc2
+	}
+
 	sc1, sc2 := 0, 0
 	var c1, c2 int
 
@@ -92,6 +101,8 @@ func playDirac(player, p1, p2, s1, s2 int) (int, int) {
 		sc1 += d[1] * c1
 		sc2 += d[1] * c2
 	}
+
+	cache[state{player, p1, p2, s1, s2}] = result{sc1, sc2}
 	return sc1, sc2
 }
 

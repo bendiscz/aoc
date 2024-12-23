@@ -29,12 +29,6 @@ type rect struct {
 	p1, p2 XY
 }
 
-func intersect(r1, r2 rect) int {
-	p1 := XY{max(r1.p1.X, r2.p1.X), max(r1.p1.Y, r2.p1.Y)}
-	p2 := XY{min(r1.p2.X, r2.p2.X), min(r1.p2.Y, r2.p2.Y)}
-	return max(0, p2.X-p1.X) * max(0, p2.Y-p1.Y)
-}
-
 func solve(p *Problem) {
 	g := NewMatrix[cell](Square(1000))
 	rectangles := []rect(nil)

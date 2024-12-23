@@ -74,7 +74,7 @@ func solve(p *Problem) {
 }
 
 func condense(g grid, d int) grid {
-	return condenseX(condenseX(g.TransView(), d).TransView(), d)
+	return condenseX(condenseX(g.Trans(), d).Trans(), d)
 }
 
 func condenseX(g Grid[cell], d int) grid {

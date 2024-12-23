@@ -56,7 +56,7 @@ func solve(p *Problem) {
 	v1 = v1.Add(margin).Add(margin)
 
 	count2 := 0
-	v1.ForEach(func(xy XY) {
+	for xy := range v1.All() {
 		xy = xy.Add(v0)
 
 		sum, pt0, d0 := 0, (*point)(nil), math.MaxInt
@@ -83,7 +83,7 @@ func solve(p *Problem) {
 		if sum < limit2 {
 			count2++
 		}
-	})
+	}
 
 	r1 := &point{area: 0}
 	for _, pt := range points {

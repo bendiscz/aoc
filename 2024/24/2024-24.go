@@ -68,218 +68,225 @@ func main() {
 	Run(year, day, example, solve)
 }
 
+/*
+
+Full adder:
+
+C_in--------------------------+-------+---+
+                               \      +XOR >------------------S_out
+                                \   +-+---+
+                                 \ /
+                                  X
+                                 / \
+                                /   +-+---+
+X_i---+-------+---+            /      +AND >--C_add---+---+
+       \      |XOR >--S_mid---+-------+---+           +OR  >--C_out
+        \   +-+---+                                 +-+---+
+         \ /                                       /
+          X                                       /
+         / \                                     /
+        /   +-+---+                             /
+       /      |AND >--C_mid--------------------+
+Y_i---+-------+---+
+
+Half adder:
+
+X_i---+-------+---+
+       \      |XOR >--S_out
+        \   +-+---+
+         \ /
+          X
+         / \
+        /   +-+---+
+       /      |AND >--C_out
+Y_i---+-------+---+
+
+*/
+
 type gate struct {
-	op       string
 	in1, in2 string
+	op       string
 	out      string
-	done     bool
+}
+
+type circuit struct {
+	gates []gate
+	swaps map[string]string
+}
+
+func newCircuit() *circuit {
+	return &circuit{swaps: map[string]string{}}
+}
+
+func (c *circuit) addGate(in1, in2, op, out string) {
+	c.gates = append(c.gates, gate{in1, in2, op, out})
+}
+
+func (c *circuit) swap(out1, out2 string) {
+	c.swaps[out1] = out2
+	c.swaps[out2] = out1
+}
+
+func (c *circuit) findGate(in1, in2, op string) (gate, bool) {
+	for _, g := range c.gates {
+		if g.op != op {
+			continue
+		}
+		if g.in1 == in1 && g.in2 == in2 || g.in1 == in2 && g.in2 == in1 {
+			if out, ok := c.swaps[g.out]; ok {
+				g.out = out
+			}
+			return g, true
+		}
+	}
+	return gate{}, false
+}
+
+func wire(x string, num int) string {
+	return fmt.Sprintf("%s%02d", x, num)
 }
 
 func solve(p *Problem) {
-	s1, s2 := 0, 0
-
-	//g := grid{NewMatrix[cell](Rectangle(len(p.PeekLine()), 0))}
-
-	//s := p.ReadAll()
-
 	wires := map[string]bool{}
-	gates := []*gate(nil)
 	for p.NextLine() && p.Line() != "" {
 		f := SplitFieldsDelim(p.Line(), ": ")
 		wires[f[0]] = f[1] == "1"
 	}
+
+	c := newCircuit()
 	for p.NextLine() {
 		f := SplitFieldsDelim(p.Line(), " ->")
-		gates = append(gates, &gate{
-			op:  f[1],
-			in1: f[0],
-			in2: f[2],
-			out: f[3],
-		})
+		c.addGate(f[0], f[2], f[1], f[3])
 	}
 
-	for {
-		done := true
-		for _, g := range gates {
-			if g.done {
-				continue
-			}
-
-			w1, ok1 := wires[g.in1]
-			w2, ok2 := wires[g.in2]
-			if !ok1 || !ok2 {
-				continue
-			}
-
-			var out bool
-			switch g.op {
-			case "AND":
-				out = w1 && w2
-			case "OR":
-				out = w1 || w2
-			case "XOR":
-				out = w1 != w2
-			}
-			g.done = true
-			wires[g.out] = out
-			done = false
-		}
-		if done {
-			break
-		}
-	}
-
-	zw := []string(nil)
-	for w := range wires {
-		if w[0] == 'z' {
-			zw = append(zw, w)
-		}
-	}
-	slices.Sort(zw)
-
-	for i, w := range zw {
-		if wires[w] {
-			s1 |= 1 << i
-		}
-	}
-	p.PartOne(s1)
+	p.PartOne(solvePartOne(c, wires))
 
 	if p.Example() {
 		return
 	}
-
-	swaps := map[string]string{
-		"z08": "vvr",
-		"vvr": "z08",
-
-		"bkr": "rnq",
-		"rnq": "bkr",
-
-		"z28": "tfb",
-		"tfb": "z28",
-
-		"z39": "mqh",
-		"mqh": "z39",
-	}
-	_ = swaps
-
-	for _, g := range gates {
-		applySwap(swaps, &g.out)
-	}
-
-	adders := []adder(nil)
-	for i := 0; i < 45; i++ {
-		if i == 0 {
-			sout := findGate(gates, "x00", "y00", "XOR")
-			cout := findGate(gates, "x00", "y00", "AND")
-			adders = append(adders, adder{sout: sout.out, cout: cout.out})
-			continue
-		}
-
-		a := adder{}
-		smid := findGate(gates, nWire("x", i), nWire("y", i), "XOR")
-		cmid := findGate(gates, nWire("x", i), nWire("y", i), "AND")
-		a.smid = smid.out
-		a.cmid = cmid.out
-
-		sout := findGate(gates, smid.out, adders[i-1].cout, "XOR")
-		if sout == nil || sout.out[0] != 'z' {
-			panic(fmt.Sprintf("sout %d", i))
-		}
-		a.sout = sout.out
-
-		cadd := findGate(gates, adders[i-1].cout, a.smid, "AND")
-		if cadd == nil {
-			panic(fmt.Sprintf("cadd %d", i))
-		}
-		a.cadd = cadd.out
-
-		cout := findGate(gates, a.cmid, a.cadd, "OR")
-		if cout == nil {
-			panic(fmt.Sprintf("cout %d", i))
-		}
-		a.cout = cout.out
-
-		adders = append(adders, a)
-	}
-
-	p.PartTwo(s2)
-	p.PartTwo(strings.Join(slices.Sorted(maps.Keys(swaps)), ","))
+	p.PartTwo(solvePartTwo(c, wires))
 }
 
-func applySwap(swaps map[string]string, s *string) {
-	if x, ok := swaps[*s]; ok {
-		*s = x
+func solvePartOne(c *circuit, wires map[string]bool) int {
+	for done := false; !done; {
+		done = true
+		for _, g := range c.gates {
+			if _, ok := wires[g.out]; ok {
+				continue
+			}
+
+			in1, ok1 := wires[g.in1]
+			in2, ok2 := wires[g.in2]
+			if !ok1 || !ok2 {
+				continue
+			}
+
+			done = false
+
+			switch g.op {
+			case "AND":
+				wires[g.out] = in1 && in2
+			case "OR":
+				wires[g.out] = in1 || in2
+			case "XOR":
+				wires[g.out] = in1 != in2
+			}
+		}
+	}
+
+	for s, i := 0, 0; ; i++ {
+		if w, ok := wires[wire("z", i)]; ok {
+			if w {
+				s |= 1 << i
+			}
+		} else {
+			return s
+		}
 	}
 }
 
-func nWire(x string, num int) string {
-	return fmt.Sprintf("%s%02d", x, num)
-}
+func solvePartTwo(c *circuit, wires map[string]bool) string {
+loop:
+	for iter := 0; iter < 1_000_000; iter++ {
+		carry := ""
+		for i := 0; ; i++ {
+			x, y, z := wire("x", i), wire("y", i), wire("z", i)
+			if _, ok := wires[x]; !ok {
+				break
+			}
 
-func findGate(gates []*gate, w1, w2, op string) *gate {
-	for _, g := range gates {
-		if g.op != op {
-			continue
+			var ok bool
+			if i == 0 {
+				carry, ok = checkHalfAdder(c, x, y, z)
+			} else {
+				carry, ok = checkFullAdder(c, x, y, z, carry)
+			}
+
+			if !ok {
+				// restart with some new swaps
+				continue loop
+			}
 		}
-		if g.in1 == w1 && g.in2 == w2 || g.in2 == w1 || g.in1 == w2 {
-			return g
-		}
+
+		return strings.Join(slices.Sorted(maps.Keys(c.swaps)), ",")
 	}
-	return nil
+
+	fail("never pick up an infinite loop!")
+	return ""
 }
 
-type halfAdd struct {
-	cout string
-	sout string
+func fail(format string, a ...any) {
+	panic(fmt.Sprintf(format, a...))
 }
 
-type adder struct {
-	cmid string
-	smid string
-	cout string
-	cadd string
-	sout string
+func checkHalfAdder(c *circuit, x, y, z string) (string, bool) {
+	sOutGate, sOutOk := c.findGate(x, y, "XOR")
+	cOutGate, cOutOk := c.findGate(x, y, "AND")
+	if !sOutOk || !cOutOk {
+		fail("could not find half gate for %s", z)
+	}
+
+	if sOutGate.out != z {
+		if cOutGate.out != z {
+			fail("broken half gate for %s", z)
+		}
+		c.swap(cOutGate.out, z)
+		return "", false
+	}
+
+	return cOutGate.out, true
 }
 
-// z08, vvr
-// bkr, rnq
-// tfb, z28
-// mqh, z39
+func checkFullAdder(c *circuit, x, y, z, carry string) (string, bool) {
+	sMidGate, sMidOk := c.findGate(x, y, "XOR")
+	cMidGate, cMidOk := c.findGate(x, y, "AND")
+	if !sMidOk || !cMidOk {
+		fail("could not find full gate for %s", z)
+	}
 
-/*
+	sOutGate, sOutOk := c.findGate(sMidGate.out, carry, "XOR")
+	if !sOutOk {
+		c.swap(sMidGate.out, cMidGate.out)
+		return "", false
+	}
 
-y16 XOR x16 -> bkr
-y16 AND x16 -> rnq
+	if sOutGate.out != z {
+		c.swap(sOutGate.out, z)
+		return "", false
+	}
 
+	cAddGate, cAddOk := c.findGate(carry, sMidGate.out, "AND")
+	if !cAddOk {
+		// should not happen, changing sMid would break sOut
+		fail("failure at cAdd gate for %s", z)
+	}
 
+	cOutGate, cOutOk := c.findGate(cMidGate.out, cAddGate.out, "OR")
+	if !cOutOk {
+		// should not happen, we can swap only cMid-cAdd and both are
+		// connected to cOut gate
+		fail("failure at cOut gate for %s", z)
+	}
 
-
-
-
-
-x09 XOR y09 -> ggf
-y09 AND x09 -> nbb
-
-
-
-
-
-
-
-
-
-x00 AND y00 -> qvn
-y00 XOR x00 -> z00
-
-
-
-y01 XOR x01 -> sgr
-y01 AND x01 -> kbq
-
-qvn XOR sgr -> z01
-
-qvn AND sgr -> drw
-drw OR kbq -> btn
-
-*/
+	return cOutGate.out, true
+}

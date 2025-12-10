@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"math"
 
 	. "github.com/bendiscz/aoc/aoc"
@@ -83,46 +82,37 @@ const N = 13
 
 // a_0 * x_1 + a_1 * x_2 + ... + a_N * x_N + b = 0
 type linear struct {
-	a [N]rational
-	b rational
+	a [N]float64
+	b float64
 }
 
-func newLinear() linear {
-	l := linear{b: integer(0)}
-	for i := 0; i < N; i++ {
-		l.a[i] = integer(0)
-	}
-	return l
-}
+const EPS = 1e-8
 
 func extract(lin linear, index int) (linear, bool) {
-	a := lin.a[index].mul(integer(-1))
-	if a.n == 0 {
+	a := -lin.a[index]
+	if math.Abs(a) < EPS {
 		return linear{}, false
 	}
 
-	a = a.inv()
-
-	r := newLinear()
-	r.b = lin.b.mul(a)
+	r := linear{b: lin.b / a}
 	for i := 0; i < N; i++ {
 		if i != index {
-			r.a[i] = lin.a[i].mul(a)
+			r.a[i] = lin.a[i] / a
 		}
 	}
 	return r, true
 }
 
 func substitute(lin linear, index int, expr linear) linear {
-	r := newLinear()
+	r := linear{}
 
 	a := lin.a[index]
-	lin.a[index] = integer(0)
+	lin.a[index] = 0
 
 	for i := 0; i < N; i++ {
-		r.a[i] = lin.a[i].plus(a.mul(expr.a[i]))
+		r.a[i] = lin.a[i] + a*expr.a[i]
 	}
-	r.b = lin.b.plus(a.mul(expr.b))
+	r.b = lin.b + a*expr.b
 	return r
 }
 
@@ -133,14 +123,14 @@ type variable struct {
 	max  int
 }
 
-func eval(v variable, vals [N]int) rational {
+func eval(v variable, vals [N]int) float64 {
 	if v.free {
-		return integer(v.val)
+		return float64(v.val)
 	}
 
 	x := v.expr.b
 	for i := 0; i < N; i++ {
-		x = x.plus(v.expr.a[i].mul(integer(vals[i])))
+		x += v.expr.a[i] * float64(vals[i])
 	}
 	return x
 }
@@ -153,11 +143,10 @@ func count2(m machine) int {
 
 	eqs := make([]linear, len(m.jolt))
 	for i, jolt := range m.jolt {
-		eq := newLinear()
-		eq.b = integer(-jolt)
+		eq := linear{b: float64(-jolt)}
 		for j, b := range m.buttons {
 			if b&(1<<i) != 0 {
-				eq.a[j] = integer(1)
+				eq.a[j] = 1
 				vars[j].max = min(vars[j].max, jolt)
 			}
 		}
@@ -199,10 +188,10 @@ func evalRecursive(vars []variable, free []int, index int) (int, bool) {
 
 		for i := len(vars) - 1; i >= 0; i-- {
 			x := eval(vars[i], vals)
-			if x.n < 0 || x.d != 1 {
+			if x < -EPS || math.Abs(x-math.Round(x)) > EPS {
 				return 0, false
 			}
-			vals[i] = x.n
+			vals[i] = int(math.Round(x))
 			total += vals[i]
 		}
 
@@ -225,45 +214,6 @@ func evalRecursive(vars []variable, free []int, index int) (int, bool) {
 	} else {
 		return 0, false
 	}
-}
-
-type rational struct {
-	n, d int
-}
-
-func integer(x int) rational {
-	return rational{x, 1}
-}
-
-func (r rational) norm() rational {
-	c := GCD(Abs(r.n), r.d)
-	if c == 1 {
-		return r
-	}
-	return rational{r.n / c, r.d / c}
-}
-
-func (r rational) plus(r2 rational) rational {
-	d2 := LCM(r.d, r2.d)
-	res := rational{r.n*(d2/r.d) + r2.n*(d2/r2.d), d2}
-	return res.norm()
-}
-
-func (r rational) mul(r2 rational) rational {
-	res := rational{r.n * r2.n, r.d * r2.d}
-	return res.norm()
-}
-
-func (r rational) inv() rational {
-	if r.n == 0 {
-		panic("divide by zero")
-	}
-	s := Sign(r.n)
-	return rational{s * r.d, Abs(r.n)}
-}
-
-func (r rational) String() string {
-	return fmt.Sprintf("%d/%d", r.n, r.d)
 }
 
 //func solve2(m machine) int {

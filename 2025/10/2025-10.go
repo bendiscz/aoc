@@ -56,12 +56,10 @@ func solve(p *Problem) {
 	for _, m := range machines {
 		s1 += count1(m)
 		s2 += count2(m)
-		//p.Printf("%d %d", s1, s2)
 	}
 
 	p.PartOne(s1)
 	p.PartTwo(s2)
-
 }
 
 func count1(m machine) int {

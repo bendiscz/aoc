@@ -25,6 +25,14 @@ func (r Rational) D() int { return r.d + 1 }
 
 func (r Rational) IsInt() bool { return r.d == 0 }
 
+func (r Rational) ToFloat32() float32 {
+	return float32(r.n) / float32(r.d+1)
+}
+
+func (r Rational) ToFloat64() float64 {
+	return float64(r.n) / float64(r.d+1)
+}
+
 func (r Rational) norm() Rational {
 	gcd := GCD(Abs(r.n), r.d+1)
 	if gcd == 1 {
@@ -37,15 +45,8 @@ func (r Rational) String() string {
 	return fmt.Sprintf("%d/%d", r.n, r.d+1)
 }
 
-func (r Rational) Add(r2 Rational) Rational {
-	d2 := LCM(r.d, r2.d+1)
-	res := Rational{r.n*(d2/(r.d+1)) + r2.n*(d2/(r2.d+1)), d2 - 1}
-	return res.norm()
-}
-
-func (r Rational) Mul(r2 Rational) Rational {
-	res := Rational{r.n * r2.n, (r.d+1)*(r2.d+1) - 1}
-	return res.norm()
+func (r Rational) Neg() Rational {
+	return Rational{n: -r.n, d: r.d}
 }
 
 func (r Rational) Inv() Rational {
@@ -54,4 +55,23 @@ func (r Rational) Inv() Rational {
 	}
 	s := Sign(r.n)
 	return Rational{s * (r.d + 1), Abs(r.n) - 1}
+}
+
+func (r Rational) Add(r2 Rational) Rational {
+	d2 := LCM(r.d+1, r2.d+1)
+	res := Rational{r.n*(d2/(r.d+1)) + r2.n*(d2/(r2.d+1)), d2 - 1}
+	return res.norm()
+}
+
+func (r Rational) Sub(r2 Rational) Rational {
+	return r.Add(r2.Neg())
+}
+
+func (r Rational) Mul(r2 Rational) Rational {
+	res := Rational{r.n * r2.n, (r.d+1)*(r2.d+1) - 1}
+	return res.norm()
+}
+
+func (r Rational) Div(r2 Rational) Rational {
+	return r.Mul(r2.Inv())
 }

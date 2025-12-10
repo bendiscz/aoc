@@ -78,15 +78,23 @@ func count1(m machine) int {
 	return best
 }
 
-const N = 13
+const (
+	N   = 13
+	EPS = 1e-8
+)
 
-// a_0 * x_1 + a_1 * x_2 + ... + a_N * x_N + b = 0
+// a_0*x_0 + a_1*x_1 + ... + a_N*x_N + b = 0
 type linear struct {
 	a [N]float64
 	b float64
 }
 
-const EPS = 1e-8
+type variable struct {
+	expr linear
+	free bool
+	val  int
+	max  int
+}
 
 func extract(lin linear, index int) (linear, bool) {
 	a := -lin.a[index]
@@ -114,13 +122,6 @@ func substitute(lin linear, index int, expr linear) linear {
 	}
 	r.b = lin.b + a*expr.b
 	return r
-}
-
-type variable struct {
-	expr linear
-	free bool
-	val  int
-	max  int
 }
 
 func eval(v variable, vals [N]int) float64 {
@@ -209,11 +210,7 @@ func evalRecursive(vars []variable, free []int, index int) (int, bool) {
 		}
 	}
 
-	if found {
-		return best, true
-	} else {
-		return 0, false
-	}
+	return best, found
 }
 
 //func solve2(m machine) int {

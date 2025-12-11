@@ -150,7 +150,7 @@ func solve(p *Problem) {
 	g.rankNodes()
 
 	p.PartOne(g.countPaths("you", "out"))
-	//p.PartOne(g.countPathsByMatrix("you", "out"))
+	//p.PartOne(g.countPathsMatrix("you", "out"))
 
 	svrFft := g.countPaths("svr", "fft")
 	svrDac := g.countPaths("svr", "dac")
@@ -162,6 +162,12 @@ func solve(p *Problem) {
 }
 
 func (g *graph) countPaths(start, stop string) int {
+	return g.countPathsTopo(start, stop)
+	//return g.countPathsMatrix(start, stop)
+	//return g.countPathsDFS(map[string]int{}, start, stop)
+}
+
+func (g *graph) countPathsTopo(start, stop string) int {
 	heap := NewHeap[*node](func(n1 *node, n2 *node) bool { return n1.rank < n2.rank })
 	heap.Push(g.nodes[start])
 
@@ -189,11 +195,29 @@ func (g *graph) countPaths(start, stop string) int {
 	return counts[stop]
 }
 
-func (g *graph) countPathsByMatrix(start, stop string) int {
+func (g *graph) countPathsMatrix(start, stop string) int {
 	if g.conn == nil {
 		g.computeConn()
 	}
 	return g.conn[g.nodes[start].id][g.nodes[stop].id]
+}
+
+func (g *graph) countPathsDFS(cache map[string]int, n, stop string) int {
+	if n == stop {
+		return 1
+	}
+
+	if s, ok := cache[n]; ok {
+		return s
+	}
+
+	s := 0
+	for _, n2 := range g.nodes[n].next {
+		s += g.countPathsDFS(cache, n2, stop)
+	}
+
+	cache[n] = s
+	return s
 }
 
 //type graph struct {

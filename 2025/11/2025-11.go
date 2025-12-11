@@ -150,7 +150,6 @@ func solve(p *Problem) {
 	g.rankNodes()
 
 	p.PartOne(g.countPaths("you", "out"))
-	//p.PartOne(g.countPathsMatrix("you", "out"))
 
 	svrFft := g.countPaths("svr", "fft")
 	svrDac := g.countPaths("svr", "dac")

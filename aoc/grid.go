@@ -87,7 +87,9 @@ func (c XY) All() iter.Seq[XY] {
 	return func(yield func(XY) bool) {
 		for y := 0; y < c.Y; y++ {
 			for x := 0; x < c.X; x++ {
-				yield(XY{X: x, Y: y})
+				if !yield(XY{X: x, Y: y}) {
+					return
+				}
 			}
 		}
 	}

@@ -27,16 +27,6 @@ func main() {
 	Run(year, day, example, solve)
 }
 
-type cell struct {
-	ch byte
-}
-
-func (c cell) String() string { return string(c.ch) }
-
-type grid struct {
-	*Matrix[cell]
-}
-
 func solve(p *Problem) {
 	d, s1, s2 := 50, 0, 0
 	for p.NextLine() {

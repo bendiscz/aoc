@@ -161,9 +161,9 @@ func solve(p *Problem) {
 }
 
 func (g *graph) countPaths(start, stop string) int {
-	return g.countPathsTopo(start, stop)
+	//return g.countPathsTopo(start, stop)
 	//return g.countPathsMatrix(start, stop)
-	//return g.countPathsDFS(map[string]int{}, start, stop)
+	return g.countPathsDFS(map[string]int{}, start, stop)
 }
 
 func (g *graph) countPathsTopo(start, stop string) int {

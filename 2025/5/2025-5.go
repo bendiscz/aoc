@@ -40,7 +40,6 @@ func solve(p *Problem) {
 		}
 
 		f := ParseInts(strings.ReplaceAll(p.Line(), "-", "_"))
-		//p.Printf("%v", f)
 		ints = append(ints, f)
 	}
 
@@ -54,14 +53,14 @@ func solve(p *Problem) {
 		}
 	}
 
-	iset := IntervalSet[int](nil)
+	set := IntervalSet[int](nil)
 	for _, i := range ints {
-		iset = append(iset, Interval[int]{i[0], i[1] + 1})
+		set = append(set, Interval[int]{X1: i[0], X2: i[1] + 1})
 	}
 
-	iset = MergeIntervals[int](iset...)
+	set = MergeIntervals[int](set...)
 
-	for _, i := range iset {
+	for _, i := range set {
 		s2 += i.X2 - i.X1
 	}
 

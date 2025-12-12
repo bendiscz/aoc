@@ -47,7 +47,6 @@ func solve(p *Problem) {
 			return cell{ch: b}
 		})
 	}
-	//PrintGrid(g)
 
 	for xy := range g.Dim.All() {
 		if g.At(xy).ch != '@' {
@@ -102,6 +101,4 @@ func solve(p *Problem) {
 
 	p.PartOne(s1)
 	p.PartTwo(s2)
-
-	//os.Exit(1)
 }

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"strings"
 
 	. "github.com/bendiscz/aoc/aoc"
@@ -148,7 +147,7 @@ func solve(p *Problem) {
 
 	s1, s2 := 0, 0
 	for {
-		fmt.Printf("testing %s\n", p.Line())
+		//fmt.Printf("testing %s\n", p.Line())
 		f := ParseInts(p.Line())
 		area := 0
 		for i, x := range f[2:] {
@@ -179,13 +178,14 @@ func canFit(dim XY, counts []int, shapes []shape) bool {
 	if total > dim.X*dim.Y {
 		return false
 	}
-	return fill(grid{NewMatrix[cell](dim)}, counts, shapes)
+
+	return fill(grid{NewMatrix[cell](dim)}, counts, make([]Stack[XY], len(counts)), shapes)
 }
 
-func fill(g grid, counts []int, shapes []shape) bool {
+func fill(g grid, counts []int, placements []Stack[XY], shapes []shape) bool {
 	if done(counts) {
-		PrintGrid(g)
-		fmt.Printf("---\n")
+		//PrintGrid(g)
+		//fmt.Printf("---\n")
 		return true
 	}
 
@@ -197,14 +197,25 @@ func fill(g grid, counts []int, shapes []shape) bool {
 		counts[i]--
 
 		s := shapes[i]
+		orig := XY0
+		if placements[i].Len() > 0 {
+			orig = placements[i].Top()
+		}
+
 		for at := range g.Dim.Sub(Square(N - 1)).All() {
+			if at.X <= orig.X && at.Y <= orig.Y {
+				continue
+			}
+
 			for _, v := range s.variants {
 				if !place(g, v, at, s.code) {
 					continue
 				}
-				if fill(g, counts, shapes) {
+				placements[i].Push(at)
+				if fill(g, counts, placements, shapes) {
 					return true
 				}
+				placements[i].Pop()
 				remove(g, v, at)
 			}
 		}
